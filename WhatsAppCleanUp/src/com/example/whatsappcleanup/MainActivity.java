@@ -1,7 +1,17 @@
 package com.example.whatsappcleanup;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +26,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
@@ -30,11 +41,55 @@ public class MainActivity extends Activity {
 	Button clearImgesButton;
 	Button clearVideoButton;
 	ToggleButton visibiltyButton;
-
+	static int APP_VERSION = 0;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		 String json = "";
+		
+		
+		try {
+//			System.setProperty("http.proxyHost", "https://dl.dropbox.com");
+//			System.setProperty("http.proxyPort", "80");
+			URL dropBxurl = new URL("https://dl.dropbox.com/s/v193yo0qj504l89/version.txt?token_hash=AAFu9uaSizF-9uwukhEf1GLETy61RhA_wFMK0k8X3S_tVw&dl=1");
+		
+		InputStream	inputStream = dropBxurl.openConnection().getInputStream();
+		 BufferedReader reader = new BufferedReader(new InputStreamReader(
+				 inputStream, "iso-8859-1"), 8);
+	        StringBuilder sb = new StringBuilder();
+	        String line = null;
+	        while ((line = reader.readLine()) != null) {
+	            sb.append(line + "\n");
+	        }
+	        inputStream.close();
+	        // hier habe ich das JSON-File als String
+	        json = sb.toString();
+	        System.out.println("++++++++++++++++++++  JSON Parser"+json);
+		
+		
+		} catch (MalformedURLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		JSONObject jObj = null;
+		int serverVersion = APP_VERSION;
+		try {
+	        jObj = new JSONObject(json);
+	        
+	        System.out.println("++++++++++++++++++++  jObj jObj "+jObj.getInt("version"));
+	        serverVersion = jObj.getInt("version");
+	    } catch (JSONException e) {
+	    	System.out.println("++++++++++++++JSON Parser Error parsing data " + e.toString());
+	    }
+		
+		if (APP_VERSION < serverVersion) {
+			Toast.makeText(this, "New Version Available for Download at ", Toast.LENGTH_LONG).show();
+		}
+		
 		clearImgesButton = (Button) findViewById(R.id.buttonImagePath);
 		clearVideoButton = (Button) findViewById(R.id.buttonVideoPath);
 		visibiltyButton = (ToggleButton) findViewById(R.id.toggleButton1);
@@ -64,6 +119,8 @@ public class MainActivity extends Activity {
 				NOMEDIA_VIDEO_PATH = dir.getPath() +WHATSAPP_VIDEO_PATH +"/.nomedia";
 			}
 
+		}else{
+			Toast.makeText(this, "NO MEDIA ", Toast.LENGTH_LONG).show();
 		}
 
 		System.out.println("==dirNOMEDIA_IMAGE_PATH======   "+NOMEDIA_IMAGE_PATH);
@@ -143,7 +200,7 @@ public class MainActivity extends Activity {
 					System.out.println("--imageFinal path "+WHATSAPP_VIDEO_PATH );
 					File dirWHATSAPP_IMAGE_PATH = new File(WHATSAPP_VIDEO_PATH);
 					if(dirWHATSAPP_IMAGE_PATH.exists() && dirWHATSAPP_IMAGE_PATH.isDirectory()) {
-						DeletePath = WHATSAPP_IMAGE_PATH;
+						DeletePath = WHATSAPP_VIDEO_PATH;
 						alertConfirmDelete.setMessage("Are You sure you want to delete all file at "+DeletePath);
 						alertConfirmDelete.show();
 					}
@@ -157,7 +214,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				// TODO Auto-generated method stub
-				if (EXTRNLSTROAGEAVAILABLE) {
 					if (isChecked) {
 						//	new File(WHATSAPP_IMAGE_PATH, ".nomedia");
 
@@ -189,7 +245,7 @@ public class MainActivity extends Activity {
 
 
 					}
-				}
+				
 
 			}
 		});
