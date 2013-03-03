@@ -230,7 +230,7 @@ public class MainActivity extends Activity {
 		//	            Intent.ACTION_MEDIA, uri);
 		//	    sendBroadcast(scanFileIntent);
 
-		sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri
+		sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri
 				.parse("file://"
 						+ Environment.getExternalStorageDirectory())));
 	}
